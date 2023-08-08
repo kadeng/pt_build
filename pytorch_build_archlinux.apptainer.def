@@ -1,0 +1,28 @@
+Bootstrap: docker
+From: archlinux:latest
+
+%post
+    # Update the system
+    pacman -Syu --noconfirm
+
+    # Install essential packages for building
+    pacman -S --noconfirm base-devel git python asp wget
+    pacman -S --noconfirm google-glog gflags opencv openmp nccl pybind11 python-yaml libuv
+    pacman -S --noconfirm python-numpy python-sympy protobuf ffmpeg4.4 python-future qt6-base intel-oneapi-mkl python-typing_extensions numactl
+    pacman -S --noconfirm python-setuptools python-yaml python-numpy cmake cuda cudnn rocm-hip-sdk roctracer miopen ninja doxygen vulkan-headers shaderc
+    # Create a new non-root user for building
+    useradd -m builder
+    echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+    chmod 0440 /etc/sudoers.d/builder
+    mkdir -p python-pytorch
+    chown builder python-pytorch
+    # Switch to the non-root user and perform the build
+    su builder -c "
+        # Fetch the PKGBUILD for PyTorch
+        asp checkout python-pytorch
+        cd python-pytorch/trunk
+
+        # Build and Install PyTorch
+        makepkg -s --noconfirm
+    "
+
