@@ -1,0 +1,30 @@
+#!/bin/sh
+export CMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
+export USE_CUDNN=1
+export USE_ROCM=0
+export TORCH_CUDA_ARCH_LIST=8.0
+export OVERRIDE_TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}"
+export CUDNN_LIB_DIR=/usr/lib
+export CUDNN_INCLUDE_DIR=/usr/include
+export CC=/usr/bin/gcc-12
+export CC=/usr/bin/gcc-12
+export CXX=/usr/bin/g++-12
+export CUDAHOSTCXX=/opt/cuda/bin/g++
+export CUDA_HOST_COMPILER="${CUDAHOSTCXX}"
+#export CUDA_VISIBLE_DEVICES=""
+export CUDA_HOME=/opt/cuda
+#export TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
+export CXXFLAGS="${CXXFLAGS} -I third_party/ideep/mkl-dnn/third_party/oneDNN/include/"
+export USE_SYSTEM_NCCL=ON
+export USE_OPENCV=ON
+export USE_MKLDNN=ON
+#export ATEN_NO_TEST=ON
+export USE_GLOG=OFF
+export VERBOSE=1
+export ATEN_NO_TEST=OFF
+export USE_MPI=OFF
+export PATH=$PATH:/opt/cuda/bin
+export DEBUG=1
+export USE_DISTRIBUTED=0
+export USE_FFMPEG=1
+python setup.py "$@"
