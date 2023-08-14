@@ -1,28 +1,33 @@
 Bootstrap: docker
-From: archlinux:latest
+From: archlinux:base-20230723.0.166908
+
+%files
+    pytorch_build_env.sh /usr/local/bin/pytorch_build_env.sh
 
 %post
-    # Update the system
-    pacman -Syu --noconfirm
+   pacman -Syu --noconfirm
+   pacman -S --noconfirm base-devel git python asp wget
+   pacman -S --noconfirm google-glog gflags opencv openmp nccl pybind11 python-yaml
+   pacman -S --noconfirm libuv python-numpy python-sympy python-future
+   pacman -S --noconfirm protobuf ffmpeg4.4
+   pacman -S --noconfirm qt6-base intel-oneapi-mkl
+   pacman -S --noconfirm python-typing_extensions numactl python-setuptools python-yaml python-numpy cmake
+   pacman -S --noconfirm ninja doxygen
+   pacman -S --noconfirm shaderc
+   pacman -S --noconfirm cuda
+   pacman -S --noconfirm cudnn
+   pacman -S --noconfirm rocm-hip-sdk roctracer
+   pacman -S --noconfirm miopen
+   pacman -S --noconfirm vulkan-headers
+   chmod +x /usr/local/bin/pytorch_setup
+   pacman -S --noconfirm ccache
+   mkdir -p /usr/local/sbin/cuda
+   ln -s /usr/sbin/ccache /usr/local/sbin/gcc
+   ln -s /usr/sbin/ccache /usr/local/sbin/cc
+   ln -s /usr/sbin/ccache /usr/local/sbin/g++
+   ln -s /usr/sbin/ccache /usr/local/sbin/c++
+   ln -s /usr/sbin/ccache /usr/local/sbin/cuda/nvcc
+   ln -s /usr/sbin/ccache /usr/local/sbin/gcc-12
+   ln -s /usr/sbin/ccache /usr/local/sbin/g++-12
 
-    # Install essential packages for building
-    pacman -S --noconfirm base-devel git python asp wget
-    pacman -S --noconfirm google-glog gflags opencv openmp nccl pybind11 python-yaml libuv
-    pacman -S --noconfirm python-numpy python-sympy protobuf ffmpeg4.4 python-future qt6-base intel-oneapi-mkl python-typing_extensions numactl
-    pacman -S --noconfirm python-setuptools python-yaml python-numpy cmake cuda cudnn rocm-hip-sdk roctracer miopen ninja doxygen vulkan-headers shaderc
-    # Create a new non-root user for building
-    useradd -m builder
-    echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
-    chmod 0440 /etc/sudoers.d/builder
-    mkdir -p python-pytorch
-    chown builder python-pytorch
-    # Switch to the non-root user and perform the build
-    su builder -c "
-        # Fetch the PKGBUILD for PyTorch
-        asp checkout python-pytorch
-        cd python-pytorch/trunk
-
-        # Build and Install PyTorch
-        makepkg -s --noconfirm
-    "
 
