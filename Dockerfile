@@ -19,7 +19,12 @@ RUN mkdir -p build/python-pytorch && cd build && asp checkout python-pytorch
 COPY pytorch_setup /usr/local/bin/pytorch_setup
 RUN chmod +x /usr/local/bin/pytorch_setup
 RUN pacman -S --noconfirm ccache
+RUN mkdir mkdir -p /usr/local/sbin/cuda && \
+           ln -s /usr/sbin/ccache /usr/local/sbin/gcc && ln -s /usr/sbin/ccache /usr/local/sbin/cc && \
+           ln -s /usr/sbin/ccache /usr/local/sbin/g++ && ln -s /usr/sbin/ccache /usr/local/sbin/c++ && \
+           ln -s /usr/sbin/ccache /usr/local/sbin/cuda/nvcc
 
+#RUN CCACHE_HOME=$HOME/local/ccache
 #FROM baseimg as bpk
 #ARG PYTORCH_GIT_REV=main
 #ARG PYTORCH_PKG_VER=2.1.devel
