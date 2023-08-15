@@ -34,7 +34,8 @@ From: archlinux:base-20230723.0.166908
    sed -i 's/!debug/debug/' /etc/makepkg.conf
    pacman -S --noconfirm tk bluez-libs mpdecimal llvm xorg-server-xvfb ttf-font
    mkdir /build
-   cd build && asp checkout python 
+   cd build
+   asp checkout python
    useradd -m builder
    mv /build/python/trunk /build/python/debug
    chown -R builder /build
@@ -48,7 +49,7 @@ From: archlinux:base-20230723.0.166908
    su builder -c "makepkg --noconfirm --noprepare --nocheck --skipchecksums --skippgpcheck"
    echo "Copying python-dbg.py to /usr/bin"
    cp /build/python/debug/src/Python-3.11.3/python-gdb.py /usr/bin/
-   cp /usr/bin/python-dbg.py /usr/bin/python3-dbg.py
+   cp /usr/bin/python-gdb.py /usr/bin/python3-gdb.py
    echo "Installing python debug build as default python package in the system"
    pacman -U --noconfirm python-3.11.3-1-x86_64.pkg.tar.zst
    echo "Reinstalling previously installed packages via pip"
@@ -65,5 +66,10 @@ From: archlinux:base-20230723.0.166908
    echo "#\!/bin/sh" >/usr/bin/pygdb
    echo "gdb -x /usr/bin/python-gdb.py \"\$@\"" >>/usr/bin/pygdb
    chmod +x /usr/bin/pygdb
-   
+   echo "Building python3.9 for cuda-gdb"
+   cd /build
+   git clone https://aur.archlinux.org/python39.git
+   cd python39
+   chown -R builder /build
+   su builder -c "makepkg --noconfirm --nocheck --skipchecksums --skippgpcheck"
    
