@@ -14,9 +14,6 @@ From: archlinux:base-20230723.0.166908
    pacman -S --noconfirm python-typing_extensions numactl python-setuptools python-yaml python-numpy cmake
    pacman -S --noconfirm ninja doxygen
    pacman -S --noconfirm shaderc
-   pacman -S --noconfirm cuda
-   pacman -S --noconfirm cudnn
-   pacman -S --noconfirm rocm-hip-sdk roctracer
    pacman -S --noconfirm miopen
    pacman -S --noconfirm vulkan-headers
    pacman -S --noconfirm ccache
@@ -35,10 +32,12 @@ From: archlinux:base-20230723.0.166908
    pacman -S --noconfirm tk bluez-libs mpdecimal llvm xorg-server-xvfb ttf-font
    mkdir /build
    cd build
-   asp checkout python
    useradd -m builder
+   chown -R builder /build 
+   su builder -c "asp checkout python"
+   cd /build/python
+   su builder -c "git checkout 40b604ff7c7a85297bf4f633d7483ac1479b7ccd" 
    mv /build/python/trunk /build/python/debug
-   chown -R builder /build
    cd /build/python/debug
    echo "Patching Python build recipe to create debug build"
    sed -i 's/--prefix=\/usr/--prefix=\/usr --with-pydebug/' PKGBUILD
@@ -71,5 +70,10 @@ From: archlinux:base-20230723.0.166908
    git clone https://aur.archlinux.org/python39.git
    cd python39
    chown -R builder /build
+   su builder -c "git checkout 7dc4358131235b7ced6539bf5726f025e95eaf2b"
    su builder -c "makepkg --noconfirm --nocheck --skipchecksums --skippgpcheck"
+   pacman -U --noconfirm python39-3.9.17-2-x86_64.pkg.tar.zst
+   pacman -S --noconfirm cuda
+   pacman -S --noconfirm cudnn
+   pacman -S --noconfirm rocm-hip-sdk roctracer
    

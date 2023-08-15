@@ -25,7 +25,7 @@ The contained apptainer image can be built and consecutively run without any roo
 on Linux hosts with or without CUDA-capable GPUs. The container image contains
 
  * **All libraries required to arrive at a debug build of Pytorch 2** ( tested with a recent checkout of the **main** branch of pytorch as of 2023-08-15 ) 
- * This includes the **CUDA Toolkit** and **Intel MKL** as well as **AMS's ROCm Framewrork** ( even if it's not used atm)
+ * This includes the **CUDA Toolkit** and **Intel MKL** as well as **AMD's ROCm Framework** ( even if it's not used at the moment)
  * A **debug build of python 3.11.3**, including the **python-gdb.py** script which extends gdb with mixed-mode debugging capabilities.
  * A non-debug build of **python 3.9** - which is required by cuda-gdb to run the **python-gdb.py** script ( python>3.9 is not supported by cuda-gdb )
  * An **environment-script** to set up all neccessary environment variables to easily arrive at a mixed-mode debug build of Pytorch.
