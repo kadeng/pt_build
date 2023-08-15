@@ -6,7 +6,7 @@ From: archlinux:base-20230723.0.166908
 
 %post
    pacman -Syu --noconfirm
-   pacman -S --noconfirm base-devel git python asp wget
+   pacman -S --noconfirm base-devel git python asp wget gdb
    pacman -S --noconfirm google-glog gflags opencv openmp nccl pybind11 python-yaml
    pacman -S --noconfirm libuv python-numpy python-sympy python-future
    pacman -S --noconfirm protobuf ffmpeg4.4
@@ -19,8 +19,8 @@ From: archlinux:base-20230723.0.166908
    pacman -S --noconfirm rocm-hip-sdk roctracer
    pacman -S --noconfirm miopen
    pacman -S --noconfirm vulkan-headers
-   chmod +x /usr/local/bin/pytorch_setup
    pacman -S --noconfirm ccache
+   pacman -S --noconfirm vim gdb valgrind
    mkdir -p /usr/local/sbin/cuda
    ln -s /usr/sbin/ccache /usr/local/sbin/gcc
    ln -s /usr/sbin/ccache /usr/local/sbin/cc
@@ -29,5 +29,41 @@ From: archlinux:base-20230723.0.166908
    ln -s /usr/sbin/ccache /usr/local/sbin/cuda/nvcc
    ln -s /usr/sbin/ccache /usr/local/sbin/gcc-12
    ln -s /usr/sbin/ccache /usr/local/sbin/g++-12
-
-
+   echo "Ensuring makepkg is creating debug builds by default"
+   sed -i 's/strip docs/docs/' /etc/makepkg.conf
+   sed -i 's/!debug/debug/' /etc/makepkg.conf
+   pacman -S --noconfirm tk bluez-libs mpdecimal llvm xorg-server-xvfb ttf-font
+   mkdir /build
+   cd build && asp checkout python 
+   useradd -m builder
+   mv /build/python/trunk /build/python/debug
+   chown -R builder /build
+   cd /build/python/debug
+   echo "Patching Python build recipe to create debug build"
+   sed -i 's/--prefix=\/usr/--prefix=\/usr --with-pydebug/' PKGBUILD
+   sed -i 's/O3/O1/' PKGBUILD
+   echo "Preparing build - checking out all sources and applying patches"
+   su builder -c "makepkg --noconfirm --nobuild --nocheck --skipchecksums --skippgpcheck"
+   echo "Building Python debug version"
+   su builder -c "makepkg --noconfirm --noprepare --nocheck --skipchecksums --skippgpcheck"
+   echo "Copying python-dbg.py to /usr/bin"
+   cp /build/python/debug/src/Python-3.11.3/python-gdb.py /usr/bin/
+   cp /usr/bin/python-dbg.py /usr/bin/python3-dbg.py
+   echo "Installing python debug build as default python package in the system"
+   pacman -U --noconfirm python-3.11.3-1-x86_64.pkg.tar.zst
+   echo "Reinstalling previously installed packages via pip"
+   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+   python get-pip.py
+   pip freeze >requirements.txt
+   sed -E -i 's/^([a-zA-Z0-9\._\-]+==[0-9]+\.[0-9]+(\.[0-9]+)?).*/\1/gm' requirements.txt
+   sed -E -i 's/^TBB==0\.2/TBB==2021.10.0/gm' requirements.txt
+   sed -E -i 's/trove-classifiers==2023\.8\.8/trove-classifiers==2023.8.7/gm' requirements.txt
+   rm -f /usr/lib/python3.11/site-packages/TBB-0.2-py3.11.egg-info 
+   rm -f /usr/lib/python3.11/site-packages/TBB.py
+   pip install -r requirements.txt --force-reinstall
+   ln -s /usr/lib/libpython3.11d.so /usr/lib/libpython3.11.so.1.0
+   echo "#\!/bin/sh" >/usr/bin/pygdb
+   echo "gdb -x /usr/bin/python-gdb.py \"\$@\"" >>/usr/bin/pygdb
+   chmod +x /usr/bin/pygdb
+   
+   
