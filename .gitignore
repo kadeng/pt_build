@@ -1,1 +1,3 @@
 *.sif
+overlay
+.gdb_history
